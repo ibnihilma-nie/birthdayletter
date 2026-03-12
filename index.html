@@ -337,9 +337,14 @@
         <span id="musicIcon">🎵</span>
     </div>
 
-    <!-- Hidden audio - MENGGUNAKAN FILE LOKAL -->
+    <!-- Hidden audio -->
     <audio id="bgMusic" loop>
         <source src="HappyBirthday.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Sound Effect Klik -->
+    <audio id="popSound">
+        <source src="pop.mp3" type="audio/mpeg">
     </audio>
 
     <!-- Letter Container -->
@@ -372,6 +377,7 @@
         const finalMsg = document.getElementById('finalMsg');
         const musicBtn = document.getElementById('musicBtn');
         const bgMusic = document.getElementById('bgMusic');
+        const popSound = document.getElementById('popSound');
         const musicIcon = document.getElementById('musicIcon');
 
         let score = 0;
@@ -391,6 +397,12 @@
             "Sekali lagi, Happy Birthday Marsha! ✨"
         ];
 
+        // Fungsi Memutar Suara Klik
+        function playPop() {
+            popSound.currentTime = 0;
+            popSound.play().catch(() => {});
+        }
+
         // GAME LOGIC
         function spawnHeart() {
             if (!gameActive) return;
@@ -406,6 +418,7 @@
             
             heart.onclick = (e) => {
                 e.stopPropagation();
+                playPop(); // Suara saat klik di game
                 score++;
                 scoreDisplay.innerText = `Hati: ${score} / ${targetScore}`;
                 heart.remove();
@@ -434,14 +447,10 @@
             setTimeout(() => {
                 gameScreen.style.visibility = 'hidden';
                 mainContainer.classList.add('active');
-                // Mulai musik otomatis saat transisi setelah interaksi user (game)
-                bgMusic.play().then(() => { musicIcon.innerText = '⏸️'; }).catch(() => {
-                    console.log("Audio play failed, requires manual interaction.");
-                });
+                bgMusic.play().then(() => { musicIcon.innerText = '⏸️'; }).catch(() => {});
             }, 1000);
         }
 
-        // Start Game
         spawnHeart();
 
         // LETTER LOGIC
@@ -474,6 +483,7 @@
 
         envelope.addEventListener('click', () => {
             if (!envelope.classList.contains('open')) {
+                playPop(); // Suara saat buka amplop
                 envelope.classList.add('open');
                 promptText.style.display = 'none';
                 setTimeout(() => { typeMessage(messages[currentMsgIndex]); }, 1000);
@@ -483,6 +493,7 @@
         nextBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             if (isTyping) return;
+            playPop(); // Suara saat klik lanjut pesan
             currentMsgIndex++;
             typeMessage(messages[currentMsgIndex]);
         });
@@ -506,6 +517,7 @@
         }
 
         function createTapHeart(e) {
+            playPop(); // Suara setiap kali layar dipencet (efek hati)
             const heart = document.createElement('div');
             heart.className = 'tap-heart';
             heart.innerHTML = '💖';
