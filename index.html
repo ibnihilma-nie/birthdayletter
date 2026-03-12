@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Letter for Marsha</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Quicksand:wght@300;500&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fdf6f0;
+            --envelope-color: #f2d5d5;
+            --envelope-dark: #e8c3c3;
+            --accent-color: #d4a373;
+            --text-color: #5d4a4a;
+            --pink-soft: #fce4ec;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Quicksand', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        /* Background Elements */
+        .bg-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .floating-heart {
+            position: absolute;
+            color: #ffc1cc;
+            opacity: 0.6;
+            animation: float 6s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            20% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Game Screen */
+        #game-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            transition: opacity 1s ease, visibility 1s;
+        }
+
+        .game-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2rem;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .game-desc {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .score-board {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #e91e63;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .game-target {
+            position: absolute;
+            font-size: 40px;
+            cursor: pointer;
+            user-select: none;
+            animation: heartPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1001;
+        }
+
+        @keyframes heartPop {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        /* Main Container (Letter) */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 400px;
+            perspective: 1000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 1s ease;
+            visibility: hidden;
+        }
+
+        .container.active {
+            opacity: 1;
+            transform: scale(1);
+            visibility: visible;
+        }
+
+        /* Envelope Styles */
+        .envelope-wrapper {
+            position: relative;
+            width: 280px;
+            height: 180px;
+            background-color: var(--envelope-color);
+            cursor: pointer;
+            transition: transform 0.5s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 0 0 5px 5px;
+        }
+
+        .envelope-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 140px solid transparent;
+            border-right: 140px solid transparent;
+            border-top: 100px solid var(--envelope-dark);
+            transform-origin: top;
+            transition: transform 0.5s ease 0.3s;
+            z-index: 2;
+        }
+
+        .envelope-wrapper.open::before {
+            transform: rotateX(180deg);
+            z-index: 0;
+        }
+
+        .envelope-wrapper .text-prompt {
+            position: absolute;
+            bottom: -60px;
+            width: 100%;
+            text-align: center;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.3rem;
+            color: var(--accent-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+        /* Paper Styles */
+        .paper {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 260px;
+            height: 160px;
+            background: white;
+            padding: 20px;
+            transition: all 0.8s ease;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .envelope-wrapper.open .paper {
+            transform: translateY(-120px);
+            height: 520px;
+            width: 320px;
+            left: -20px;
+            padding: 30px 25px;
+            border-radius: 8px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+        }
+
+        /* Photo Frame */
+        .photo-frame {
+            width: 150px;
+            height: 150px;
+            border: 8px solid #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            transform: rotate(-3deg);
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease 0.5s;
+        }
+
+        .envelope-wrapper.open .photo-frame { display: block; opacity: 1; }
+        .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Letter Content */
+        .letter-content {
+            display: none;
+            width: 100%;
+            height: auto;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .envelope-wrapper.open .letter-content { display: flex; opacity: 1; }
+
+        .typing-text {
+            font-family: 'Caveat', cursive;
+            font-size: 1.4rem;
+            line-height: 1.4;
+            color: var(--text-color);
+            word-wrap: break-word;
+            max-width: 100%;
+        }
+
+        .next-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #ff8a80;
+            font-size: 2rem;
+            transition: transform 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .final-message {
+            display: none;
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.2rem;
+            color: #e91e63;
+            margin-top: 10px;
+            line-height: 1.2;
+        }
+
+        /* Music Controls */
+        .music-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            background: rgba(255,255,255,0.8);
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Tap Heart Effect */
+        .tap-heart {
+            position: absolute;
+            pointer-events: none;
+            color: #ff8a80;
+            font-size: 24px;
+            z-index: 3000;
+            animation: popUp 0.8s ease-out forwards;
+        }
+
+        @keyframes popUp {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(2.5) translateY(-60px) rotate(20deg); opacity: 0; }
+        }
+
+        /* Confetti */
+        .confetti {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            z-index: 5;
+            animation: confetti-fall 3s linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-10px) rotate(0); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        @media (max-width: 480px) {
+            .envelope-wrapper.open .paper { width: 88vw; left: -15px; height: 500px; }
+            .photo-frame { width: 130px; height: 130px; }
+            .typing-text { font-size: 1.25rem; }
+        }
+    </style>
+</head>
+<body onclick="createTapHeart(event)">
+
+    <div class="bg-elements" id="bgElements"></div>
+
+    <!-- Game Screen Overlay -->
+    <div id="game-screen">
+        <h1 class="game-title">Hai Marsha!</h1>
+        <p class="game-desc">Tangkap 10 hati untuk membuka kejutanmu ✨</p>
+        <div class="score-board" id="score-display">Hati: 0 / 10</div>
+    </div>
+
+    <div class="music-control" id="musicBtn">
+        <span id="musicIcon">🎵</span>
+    </div>
+
+    <!-- Hidden audio -->
+    <audio id="bgMusic" loop>
+        <source src="https://www.chosic.com/wp-content/uploads/2021/04/Warm-Light.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Letter Container -->
+    <div class="container" id="main-container">
+        <div class="envelope-wrapper" id="envelope">
+            <div class="paper">
+                <div class="photo-frame">
+                    <!-- GANTI URL DI BAWAH INI DENGAN FOTO MARSHA -->
+                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop" alt="Marsha Photo">
+                </div>
+                
+                <div class="letter-content" id="letterContent">
+                    <div class="typing-text" id="typingArea"></div>
+                    <button class="next-btn" id="nextBtn" style="display: none;">❤️</button>
+                    <div class="final-message" id="finalMsg"></div>
+                </div>
+            </div>
+            <div class="text-prompt" id="promptText">Satu pesan untukmu. Klik untuk membuka.</div>
+        </div>
+    </div>
+
+    <script>
+        const gameScreen = document.getElementById('game-screen');
+        const scoreDisplay = document.getElementById('score-display');
+        const mainContainer = document.getElementById('main-container');
+        const envelope = document.getElementById('envelope');
+        const promptText = document.getElementById('promptText');
+        const typingArea = document.getElementById('typingArea');
+        const nextBtn = document.getElementById('nextBtn');
+        const finalMsg = document.getElementById('finalMsg');
+        const musicBtn = document.getElementById('musicBtn');
+        const bgMusic = document.getElementById('bgMusic');
+        const musicIcon = document.getElementById('musicIcon');
+
+        let score = 0;
+        const targetScore = 10;
+        let gameActive = true;
+
+        const messages = [
+            "Hai Marsha... <br>Happy Birthday!",
+            "Hari ini adalah hari yang spesial, karena dunia kembali merayakan hari lahir seseorang yang membawa banyak energi positif.",
+            "Salah satu hal yang paling aku ingat sejak pertama kali bertemu kamu adalah bagaimana kamu selalu terlihat ceria.",
+            "Kamu seperti membawa energi hangat yang membuat suasana jadi lebih hidup.",
+            "Kamu aktif, penuh semangat, dan selalu punya positive vibes yang bisa menular.",
+            "Tanpa kamu sabari, energi seperti itu bisa membuat hari orang lain jadi lebih ringan.",
+            "Di hari ulang tahunmu ini, aku berharap semua hal baik yang kamu tanam akan kembali kepadamu.",
+            "Semoga kamu mendapatkan semua hal yang kamu inginkan, satu per satu, di waktu yang tepat.",
+            "Tetap jadi pribadi yang ceria, aktif, dan penuh cahaya seperti yang aku lihat sejak awal.",
+            "Sekali lagi, Happy Birthday Marsha! ✨"
+        ];
+
+        // GAME LOGIC
+        function spawnHeart() {
+            if (!gameActive) return;
+            const heart = document.createElement('div');
+            heart.className = 'game-target';
+            heart.innerHTML = ['❤️', '💖', '💝', '💗'][Math.floor(Math.random() * 4)];
+            
+            const x = Math.random() * (window.innerWidth - 60) + 30;
+            const y = Math.random() * (window.innerHeight - 60) + 30;
+            
+            heart.style.left = x + 'px';
+            heart.style.top = y + 'px';
+            
+            heart.onclick = (e) => {
+                e.stopPropagation();
+                score++;
+                scoreDisplay.innerText = `Hati: ${score} / ${targetScore}`;
+                heart.remove();
+                
+                if (score >= targetScore) {
+                    endGame();
+                } else {
+                    spawnHeart();
+                }
+            };
+            
+            document.body.appendChild(heart);
+            
+            // Auto remove if not clicked
+            setTimeout(() => {
+                if (heart.parentElement) {
+                    heart.remove();
+                    spawnHeart();
+                }
+            }, 1500);
+        }
+
+        function endGame() {
+            gameActive = false;
+            gameScreen.style.opacity = '0';
+            setTimeout(() => {
+                gameScreen.style.visibility = 'hidden';
+                mainContainer.classList.add('active');
+                // Mulai musik otomatis saat transisi
+                bgMusic.play().then(() => { musicIcon.innerText = '⏸️'; }).catch(() => {});
+            }, 1000);
+        }
+
+        // Start Game
+        spawnHeart();
+
+        // LETTER LOGIC
+        let currentMsgIndex = 0;
+        let isTyping = false;
+
+        function typeMessage(text) {
+            isTyping = true;
+            typingArea.innerHTML = "";
+            nextBtn.style.display = "none";
+            let i = 0;
+            const speed = 50; 
+
+            function type() {
+                if (i < text.length) {
+                    if (text.substr(i, 4) === "<br>") {
+                        typingArea.innerHTML += "<br>"; i += 4;
+                    } else {
+                        typingArea.innerHTML += text.charAt(i); i++;
+                    }
+                    setTimeout(type, speed);
+                } else {
+                    isTyping = false;
+                    if (currentMsgIndex < messages.length - 1) nextBtn.style.display = "block";
+                    else showFinalEffect();
+                }
+            }
+            type();
+        }
+
+        envelope.addEventListener('click', () => {
+            if (!envelope.classList.contains('open')) {
+                envelope.classList.add('open');
+                promptText.style.display = 'none';
+                setTimeout(() => { typeMessage(messages[currentMsgIndex]); }, 1000);
+            }
+        });
+
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (isTyping) return;
+            currentMsgIndex++;
+            typeMessage(messages[currentMsgIndex]);
+        });
+
+        function showFinalEffect() {
+            finalMsg.innerHTML = "Happy Birthday <br> Marsha! 🎂";
+            finalMsg.style.display = "block";
+            setInterval(createConfetti, 2000);
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 40; i++) {
+                const conf = document.createElement('div');
+                conf.className = 'confetti';
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.backgroundColor = ['#ff8a80', '#ffd54f', '#a5d6a7', '#90caf9'][Math.floor(Math.random() * 4)];
+                conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                document.body.appendChild(conf);
+                setTimeout(() => conf.remove(), 4000);
+            }
+        }
+
+        function createTapHeart(e) {
+            const heart = document.createElement('div');
+            heart.className = 'tap-heart';
+            heart.innerHTML = '💖';
+            heart.style.left = (e.clientX - 12) + 'px';
+            heart.style.top = (e.clientY - 12) + 'px';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 1000);
+        }
+
+        musicBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (bgMusic.paused) {
+                bgMusic.play(); musicIcon.innerText = '⏸️';
+            } else {
+                bgMusic.pause(); musicIcon.innerText = '🎵';
+            }
+        });
+
+        function createBgHearts() {
+            const bg = document.getElementById('bgElements');
+            const heart = document.createElement('div');
+            heart.className = 'floating-heart';
+            heart.innerHTML = '🌸';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.fontSize = (Math.random() * 15 + 10) + 'px';
+            heart.style.animationDuration = (Math.random() * 3 + 5) + 's';
+            bg.appendChild(heart);
+            setTimeout(() => heart.remove(), 8000);
+        }
+        setInterval(createBgHearts, 1000);
+    </script>
+</body>
+</html>
