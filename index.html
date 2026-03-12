@@ -337,9 +337,9 @@
         <span id="musicIcon">🎵</span>
     </div>
 
-    <!-- Hidden audio -->
+    <!-- Hidden audio - MENGGUNAKAN FILE LOKAL -->
     <audio id="bgMusic" loop>
-        <source src="https://www.chosic.com/wp-content/uploads/2021/04/Warm-Light.mp3" type="audio/mpeg">
+        <source src="HappyBirthday.mp3" type="audio/mpeg">
     </audio>
 
     <!-- Letter Container -->
@@ -347,8 +347,8 @@
         <div class="envelope-wrapper" id="envelope">
             <div class="paper">
                 <div class="photo-frame">
-                    <!-- GANTI URL DI BAWAH INI DENGAN FOTO MARSHA -->
-                    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&auto=format&fit=crop" alt="Marsha Photo">
+                    <!-- FOTO MARSHA DIUBAH DI SINI -->
+                    <img src="Marsha.jpeg" alt="Marsha Photo">
                 </div>
                 
                 <div class="letter-content" id="letterContent">
@@ -434,8 +434,10 @@
             setTimeout(() => {
                 gameScreen.style.visibility = 'hidden';
                 mainContainer.classList.add('active');
-                // Mulai musik otomatis saat transisi
-                bgMusic.play().then(() => { musicIcon.innerText = '⏸️'; }).catch(() => {});
+                // Mulai musik otomatis saat transisi setelah interaksi user (game)
+                bgMusic.play().then(() => { musicIcon.innerText = '⏸️'; }).catch(() => {
+                    console.log("Audio play failed, requires manual interaction.");
+                });
             }, 1000);
         }
 
